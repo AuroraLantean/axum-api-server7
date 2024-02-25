@@ -1,0 +1,13 @@
+[package]
+name = "axum-api-server7"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = { version = "0.7.4" }
+tokio = { version = "1.36.0", features = ["full"] }
+tower-http = { version = "0.5.2", features = [
+  "add-extension",
+  "trace",
+  "cors",
+] }
