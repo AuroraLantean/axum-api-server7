@@ -7,6 +7,28 @@ axum 0.7+ api server &amp; ethers.rs
 Quote from Discord: Although axum is less mature than actix-web it should have a brighter future because it is part of the tokio project and integrating with other libraries should be easier. It is also based on existing foundations used by other web servers, i.e. tower.
 Using actix-web adds complications because it is using its own actix-rt runtime. It is based on tokio but it does its own thing with threads which may cause some incompatibilities with other projects. Libraries like sqlx and sea-orm have feature flags to use this runtime but most other projects typically just support tokio only. You can run actix-web under the tokio runtime but then you lose support for actix actors and websockets. I think it can be made to work but it isn't something that you really want people to deal with if they are just learning.
 
+## Tutorial and Source Code
+
+https://www.youtube.com/watch?v=JUWSy9pXgMQ
+https://github.com/thebracket/webinar_axumcrud
+
+## Database
+
+SQLite in memory database
+
+```
+cargo install sqlx-cli
+sqlx migrate add initial
+```
+
+### To embed your migrations in your application binary
+
+On startup, after creating your database connection or pool, add:
+`sqlx::migrate!().run(<&your_pool OR &mut your_connection>).await?;`
+
+Note that the compiler won't pick up new migrations if no Rust source files have changed.
+You can create a Cargo build script to work around this with `sqlx migrate build-script`.
+
 ## JWT Token expiry time leeway
 
 Since validating time fields is always a bit tricky due to clock skew, you can add some leeway to the iat, exp and nbf validation by setting the leeway field.
