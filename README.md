@@ -9,8 +9,21 @@ Using actix-web adds complications because it is using its own actix-rt runtime.
 
 ## Tutorial and Source Code
 
+Rust Axum Full Course - Web Development (GitHub repo updated to Axum 0.7) by Jeremy Chone
+https://www.youtube.com/watch?v=XZtlD_m59sM
+https://github.com/jeremychone-channel/rust-axum-course
+
+Mastering Rust Web Services: From Axum to CRUD Operations by Ardan Labs(Herbert Wolverson)
 https://www.youtube.com/watch?v=JUWSy9pXgMQ
 https://github.com/thebracket/webinar_axumcrud
+
+## Tech Stack
+
+Database: SQLite in memory
+Data Model: SQLx
+REST API: AXUM
+Web View: JavaScript + HTML
+Deploy: Docker
 
 ## Database
 
@@ -21,6 +34,8 @@ cargo install sqlx-cli
 sqlx migrate add initial
 ```
 
+The above commands will install SQLx CLI tool, make a migration, make a new file called <timestamp>initial.sql for your database schema.
+
 ### To embed your migrations in your application binary
 
 On startup, after creating your database connection or pool, add:
@@ -29,9 +44,35 @@ On startup, after creating your database connection or pool, add:
 Note that the compiler won't pick up new migrations if no Rust source files have changed.
 You can create a Cargo build script to work around this with `sqlx migrate build-script`.
 
+## Run Tests
+
+```
+cargo test
+```
+
 ## JWT Token expiry time leeway
 
 Since validating time fields is always a bit tricky due to clock skew, you can add some leeway to the iat, exp and nbf validation by setting the leeway field.
+
+## Run Development
+
+Enable hot reload:
+
+```
+cargo watch -q -c -w src/ -x run
+
+cargo watch -q -c -w tests/ -x "test -q test_hello -- --nocapture"
+```
+
+## Run API Client
+
+Install and launch the Slumber API Client from https://github.com/LucasPickering/slumber
+
+```
+slumber
+```
+
+Then go through the API commands one by one to verify the APIs work properly
 
 ## Bcrypt Hash Time
 

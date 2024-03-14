@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, Row, SqlitePool}; //FromRow enables query_as to select data into a Book struct
 use tokio::sync::RwLock;
 
-/// Represents a book, taken from the books table in SQLite.
+/// Represents a book, taken from the books table in SQLite. FromRow: allow sql query to select into the struct to make it easy
 #[derive(Debug, Serialize, Deserialize, FromRow, Clone)]
 pub struct Book {
     /// The book's primary key ID
@@ -18,6 +18,11 @@ pub struct Book {
     pub title: String,
     /// The book's author (surname, lastname - not enforced)
     pub author: String,
+}
+#[derive(Debug, Serialize, Deserialize, FromRow, Clone)]
+pub struct Output {
+    pub id: i32,
+    pub mesg: String,
 }
 
 struct BookCache {
@@ -49,7 +54,7 @@ impl BookCache {
 
 static CACHE: Lazy<BookCache> = Lazy::new(BookCache::new);
 
-/// Create a database connection pool. Run any migrations.
+/// Create a database connection pool, which can use existing authenticated connection, avoiding re-authentification every time. Run any migrations.
 ///
 /// ## Returns
 /// * A ready-to-use connection pool.
@@ -57,7 +62,7 @@ pub async fn init_db() -> Result<SqlitePool> {
     let database_url = std::env::var("DB_RAM_URL")?;
     let connection_pool = SqlitePool::connect(&database_url).await?;
 
-    // to run what is in your migration folder
+    // to run what is in your migration folder. Because we have memory db, we need to run this migration every time
     sqlx::migrate!().run(&connection_pool).await?;
     Ok(connection_pool)
 }
@@ -73,6 +78,7 @@ pub async fn all_books(connection_pool: &SqlitePool) -> Result<Vec<Book>> {
     if let Some(all_books) = CACHE.all_books().await {
         Ok(all_books)
     } else {
+        //<_, Book> means we dont care the first type(coming from the DB), and we want to receive the result in Book format
         let books = sqlx::query_as::<_, Book>("SELECT * FROM books ORDER BY title,author")
             .fetch_all(connection_pool)
             .await?; //_ is the type coming from the DB
@@ -114,7 +120,7 @@ pub async fn add_book<S: ToString>(
         .bind(author)
         .fetch_one(connection_pool)
         .await?
-        .get(0);
+        .get(0); //to get the new id
     CACHE.invalidate().await;
     Ok(id)
 }
@@ -131,7 +137,7 @@ pub async fn update_book(connection_pool: &SqlitePool, book: &Book) -> Result<()
         .bind(&book.author)
         .bind(&book.id)
         .execute(connection_pool)
-        .await?;
+        .await?; //only to execute, not to fetch, because this does not return anything
     CACHE.invalidate().await;
     Ok(())
 }
@@ -150,9 +156,9 @@ pub async fn delete_book(connection_pool: &SqlitePool, id: i32) -> Result<()> {
     Ok(())
 }
 
-#[cfg(test)]
+#[cfg(test)] // this this test won't be included in the built version
 mod test {
-    use super::*;
+    use super::*; //pull in all the functions from the parent name space
 
     #[sqlx::test]
     async fn get_all() {

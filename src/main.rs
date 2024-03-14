@@ -7,16 +7,17 @@ mod db;
 mod rest;
 mod view;
 use crate::db::init_db;
-//use anyhow::Result;
+use anyhow::{Ok, Result};
 use axum::{Extension, Router}; //response::Html, routing::get,
 use sqlx::SqlitePool;
+
+//To be continued: https://crates.io/crates/httpc-test, https://www.youtube.com/watch?v=XZtlD_m59sM, https://www.youtube.com/watch?v=JUWSy9pXgMQ&t=2407s
 
 /// Build the overall web service router.
 /// Constructing the router in a function makes it easy to re-use in unit tests.
 fn router(connection_pool: SqlitePool) -> Router {
     Router::new()
-        // Nest service allows you to attach another router to a URL base.
-        // "/" inside the service will be "/books" to the outside world.
+        // Nest service allows you to attach another router to a URL base. So "/" inside the service will be "/books" to the outside world.
         .nest_service("/books", rest::books_service())
         // Add the web view
         .nest_service("/", view::view_service())
@@ -25,11 +26,12 @@ fn router(connection_pool: SqlitePool) -> Router {
 } //layer adds dependency injection layer to it
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
+    //use anyhow to bubble up any error
     // Load environment variables from .env if available
     dotenvy::dotenv().ok();
 
-    // Initialize the database and obtain a connection pool
+    // Initialize the database and obtain a connection pool. It is reference(Arc) behind the scene, so Arc makes sure this server there is ONLY ONE connection_pool to be shared across this server
     let connection_pool = init_db().await.expect("connection pool is not available");
 
     // Initialize the Axum routing service
@@ -43,6 +45,7 @@ async fn main() {
     axum::serve(listener, app.into_make_service())
         .await
         .unwrap();
+    Ok(())
 }
 /*let app = create_routes(mode, db_conn);
 axum::serve(listener, app.await.into_make_service()).await.unwrap();

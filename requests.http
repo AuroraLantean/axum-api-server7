@@ -10,6 +10,9 @@ GET http://localhost:3000
 ### hello
 GET http://localhost:3000/hello
 
+### get all books
+GET http://localhost:3000/books/
+
 ### get_user_by_id
 GET http://localhost:3000/user/100
 ### exactmatch

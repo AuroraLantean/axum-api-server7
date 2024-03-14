@@ -11,5 +11,5 @@ VALUES (
 INSERT INTO
     books (title, author)
 VALUES (
-        'Rust Brain Teasers', 'Wolverson, Herbert'
+        'The Rust Programming Language', ' Steve Klabnik, Carol Nichols'
     );
