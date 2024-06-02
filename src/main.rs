@@ -10,6 +10,7 @@ use crate::db::init_db;
 use anyhow::{Ok, Result};
 use axum::{Extension, Router}; //response::Html, routing::get,
 use sqlx::SqlitePool;
+use tokio::net::TcpListener;
 
 //To be continued: https://crates.io/crates/httpc-test, https://www.youtube.com/watch?v=XZtlD_m59sM, https://www.youtube.com/watch?v=JUWSy9pXgMQ&t=2407s
 
@@ -26,30 +27,27 @@ fn router(connection_pool: SqlitePool) -> Router {
 } //layer adds dependency injection layer to it
 
 #[tokio::main]
-async fn main() -> Result<()> {
-    //use anyhow to bubble up any error
+async fn main() {
+    // use anyhow to bubble up any error
     // Load environment variables from .env if available
-    dotenvy::dotenv().ok();
+    dotenvy::dotenv().expect("Unable to access .env file");
+    //set variables from enviroment variables
+    let server_address = std::env::var("SERVER_ADDRESS").unwrap_or("127.0.0.1:3000".to_owned());
+    let database_url = std::env::var("DB_RAM_URL").expect("DB URL not found in env file");
 
     // Initialize the database and obtain a connection pool. It is reference(Arc) behind the scene, so Arc makes sure this server there is ONLY ONE connection_pool to be shared across this server
     let connection_pool = init_db().await.expect("connection pool is not available");
 
-    // Initialize the Axum routing service
-    let app = router(connection_pool);
-
-    // run it
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
-        .await
-        .unwrap();
+    //add our tcp listener
+    let listener = TcpListener::bind(server_address)
+    .await
+    .expect("Could not add tcp listener");
     println!("listening on {}", listener.local_addr().unwrap());
-    axum::serve(listener, app.into_make_service())
-        .await
-        .unwrap();
-    Ok(())
-}
-/*let app = create_routes(mode, db_conn);
-axum::serve(listener, app.await.into_make_service()).await.unwrap();
 
-async fn handler() -> Html<&'static str> {
-    Html("<h1>Hello, World!</h1>")
-}*/
+    // Initialize the Axum routing service
+    let router = router(connection_pool);
+    axum::serve(listener, router.into_make_service())
+        .await
+        .expect("Error serving application");
+}
+

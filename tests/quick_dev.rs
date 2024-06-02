@@ -3,13 +3,12 @@
 use anyhow::Result;
 use serde_json::json;
 
-//#[tokio::main]
 #[tokio::test]
-async fn test_hello() -> Result<()> {
-    /*let hc = httpc_test::new_client("http://localhost:3000")?;
+async fn t1() -> Result<()> {
+    let hc = httpc_test::new_client("http://localhost:3000")?; 
 
-        hc.do_get("/hello").await?.print().await?;
-
+        hc.do_get("/hello?name=John").await?.print().await?;
+/*
         hc.do_get("/hello2/Mike").await?.print().await?;
 
         hc.do_get("/src/main.rs").await?.print().await?;

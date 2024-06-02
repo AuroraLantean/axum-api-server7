@@ -50,10 +50,6 @@ You can create a Cargo build script to work around this with `sqlx migrate build
 cargo test
 ```
 
-## JWT Token expiry time leeway
-
-Since validating time fields is always a bit tricky due to clock skew, you can add some leeway to the iat, exp and nbf validation by setting the leeway field.
-
 ## Run Development
 
 Enable hot reload:
@@ -61,7 +57,7 @@ Enable hot reload:
 ```
 cargo watch -q -c -w src/ -x run
 
-cargo watch -q -c -w tests/ -x "test -q test_hello -- --nocapture"
+cargo watch -q -c -w tests/ -x "test -q t1 -- --nocapture"
 ```
 
 ## Run API Client
@@ -73,6 +69,17 @@ slumber
 ```
 
 Then go through the API commands one by one to verify the APIs work properly
+
+## Build a Docker image
+
+Initialize Docker: `docker init`
+Select Rust, then "server port 3001"
+Add database URL: `DB_RAM_URL="sqlite::memory:"`
+Build it: `docker build -t axum-test`
+
+## JWT Token expiry time leeway
+
+Since validating time fields is always a bit tricky due to clock skew, you can add some leeway to the iat, exp and nbf validation by setting the leeway field.
 
 ## Bcrypt Hash Time
 

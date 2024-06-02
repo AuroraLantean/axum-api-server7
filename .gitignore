@@ -5,6 +5,7 @@ entities
 archive
 removed
 .env
+*.zip
 
 yarn-error.log
 z*.sh

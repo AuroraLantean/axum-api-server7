@@ -59,7 +59,8 @@ static CACHE: Lazy<BookCache> = Lazy::new(BookCache::new);
 /// ## Returns
 /// * A ready-to-use connection pool.
 pub async fn init_db() -> Result<SqlitePool> {
-    let database_url = std::env::var("DB_RAM_URL")?;
+    let database_url = std::env::var("DB_RAM_URL").expect("DB URL not found in env file");
+    
     let connection_pool = SqlitePool::connect(&database_url).await?;
 
     // to run what is in your migration folder. Because we have memory db, we need to run this migration every time
