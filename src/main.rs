@@ -6,11 +6,15 @@
 mod db;
 mod rest;
 mod view;
+mod error;
+mod web;
+pub use self::error::{Error, Result};//redeclare Error and Result... to be used as "use crate::{..}"
 use crate::db::init_db;
-use anyhow::{Ok, Result};
+//use anyhow::{Ok, Result};
 use axum::{Extension, Router}; //response::Html, routing::get,
 use sqlx::SqlitePool;
 use tokio::net::TcpListener;
+use view::routes_hello;
 
 //To be continued: https://crates.io/crates/httpc-test, https://www.youtube.com/watch?v=XZtlD_m59sM, https://www.youtube.com/watch?v=JUWSy9pXgMQ&t=2407s
 
@@ -18,6 +22,8 @@ use tokio::net::TcpListener;
 /// Constructing the router in a function makes it easy to re-use in unit tests.
 fn router(connection_pool: SqlitePool) -> Router {
     Router::new()
+        .merge(routes_hello())
+        .merge(web::routes_login::routes())
         // Nest service allows you to attach another router to a URL base. So "/" inside the service will be "/books" to the outside world.
         .nest_service("/books", rest::books_service())
         // Add the web view
@@ -26,6 +32,7 @@ fn router(connection_pool: SqlitePool) -> Router {
         .layer(Extension(connection_pool))
 } //layer adds dependency injection layer to it
 
+// 8.49 @ https://www.youtube.com/watch?v=XZtlD_m59sM&t=87s
 #[tokio::main]
 async fn main() {
     // use anyhow to bubble up any error

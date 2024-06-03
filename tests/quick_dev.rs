@@ -8,7 +8,7 @@ async fn t1() -> Result<()> {
     let hc = httpc_test::new_client("http://localhost:3000")?; 
 
         hc.do_get("/hello?name=John").await?.print().await?;
-/*
+
         hc.do_get("/hello2/Mike").await?.print().await?;
 
         hc.do_get("/src/main.rs").await?.print().await?;
@@ -17,11 +17,11 @@ async fn t1() -> Result<()> {
             "/api/login",
             json!({
                 "username": "demo1",
-                "pwd": "welcome"
+                "pwd": "welcome1"
             }),
         );
         req_login.await?.print().await?;
-
+/*   
         let req_create_ticket = hc.do_post(
             "/api/tickets",
             json!({
