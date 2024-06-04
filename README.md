@@ -52,7 +52,7 @@ cargo test
 
 ## Run Development
 
-Enable hot reload:
+Enable hot reload and run tests:
 
 ```
 cargo watch -q -c -w src/ -x run

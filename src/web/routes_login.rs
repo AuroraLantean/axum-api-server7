@@ -1,7 +1,8 @@
-use crate::{Error, Result};
+use crate::{web, Error, Result};
 use axum::{routing::post, Json, Router};
 use serde::Deserialize;
 use serde_json::{json, Value};
+use tower_cookies::{Cookie, Cookies};
 //use tower_cookies::{Cookie, Cookies};
 
 pub fn routes() -> Router {
@@ -10,7 +11,7 @@ pub fn routes() -> Router {
 
 //Result<Json<Value>> requires Error trait{} implemented in IntoResponse!
 async fn api_login(
-	//cookies: Cookies,
+	cookies: Cookies,
 	payload: Json<LoginPayload>,
 ) -> Result<Json<Value>> {
 	println!("->> {:<12} - api_login", "HANDLER");
@@ -21,11 +22,11 @@ async fn api_login(
 	}
 
 	// FIXME: Implement real auth-token generation/signature.
-	/*let mut cookie = Cookie::new(web::AUTH_TOKEN, "user-1.exp.sign");
-	cookie.set_http_only(true);
-	cookie.set_path("/");
-	cookies.add(cookie);
-	*/
+	let mut cookie = Cookie::new(web::AUTH_TOKEN, "user-1.exp.sign");
+	//cookie.set_http_only(true);
+	//cookie.set_path("/");
+	cookies.add(cookie);//confirmed in response Headers: set-cookie: auth_token=user-1.exp.sign
+	
 	// Create the success body.
 	let body = Json(json!({
 		"result": {

@@ -11,16 +11,18 @@ async fn t1() -> Result<()> {
 
         hc.do_get("/hello2/Mike").await?.print().await?;
 
-        hc.do_get("/src/main.rs").await?.print().await?;
+        hc.do_get("/src/srcfile.rs").await?.print().await?;
 
         let req_login = hc.do_post(
             "/api/login",
             json!({
                 "username": "demo1",
-                "pwd": "welcome1"
+                "pwd": "welcome"
             }),
         );
         req_login.await?.print().await?;
+        
+        hc.do_get("/hello2/Mike").await?.print().await?;//to confirm client has received cookie after above request
 /*   
         let req_create_ticket = hc.do_post(
             "/api/tickets",

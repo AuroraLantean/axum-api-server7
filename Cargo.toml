@@ -10,7 +10,7 @@ tokio = { version = "1.38.0", features = ["full"] }
 tower-http = { version = "0.5.2", features = [
   "add-extension", "trace", "fs", "cors",
 ] }
-#tower-cookies = "0.10"
+tower-cookies = "0.10"
 #tower = { version = "0.4.13", features = ["util", "timeout"] }
 
 serde = { version = "1.0.203", features = ["derive"] }

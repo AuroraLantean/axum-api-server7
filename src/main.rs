@@ -11,9 +11,10 @@ mod web;
 pub use self::error::{Error, Result};//redeclare Error and Result... to be used as "use crate::{..}"
 use crate::db::init_db;
 //use anyhow::{Ok, Result};
-use axum::{Extension, Router}; //response::Html, routing::get,
+use axum::{middleware, response::Response, Extension, Router}; //response::Html, routing::get,
 use sqlx::SqlitePool;
 use tokio::net::TcpListener;
+use tower_cookies::CookieManagerLayer;
 use view::routes_hello;
 
 //To be continued: https://crates.io/crates/httpc-test, https://www.youtube.com/watch?v=XZtlD_m59sM, https://www.youtube.com/watch?v=JUWSy9pXgMQ&t=2407s
@@ -24,6 +25,8 @@ fn router(connection_pool: SqlitePool) -> Router {
     Router::new()
         .merge(routes_hello())
         .merge(web::routes_login::routes())
+        .layer(middleware::map_response(main_response_mapper))
+        .layer(CookieManagerLayer::new())
         // Nest service allows you to attach another router to a URL base. So "/" inside the service will be "/books" to the outside world.
         .nest_service("/books", rest::books_service())
         // Add the web view
@@ -58,3 +61,14 @@ async fn main() {
         .expect("Error serving application");
 }
 
+async fn main_response_mapper(
+//	ctx: Option<Ctx>,
+//	uri: Uri,
+//	req_method: Method,
+	res: Response,
+) -> Response {
+	println!("->> {:<12} - main_response_mapper", "RES_MAPPER");
+	//let uuid = Uuid::new_v4();
+    println!();
+    res
+}
