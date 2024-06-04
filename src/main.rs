@@ -14,6 +14,7 @@ mod view;
 mod error;
 mod model;
 mod web;
+mod ctx;
 
 //To be continued: https://crates.io/crates/httpc-test, https://www.youtube.com/watch?v=XZtlD_m59sM, https://www.youtube.com/watch?v=JUWSy9pXgMQ&t=2407s
 
@@ -39,12 +40,20 @@ async fn main() -> Result<()> {
     // Initialize ModelController.
 	let mc = ModelController::new().await?;
 
+	let routes_apis = web::routes_tickets::routes(mc.clone())
+		.route_layer(middleware::from_fn(web::mw_auth::mw_require_auth));
+    //use route_layer because we only want this to be applicable to this route
+    
     // Initialize the Axum routing service
     let router = Router::new()
         .merge(routes_hello())
         .merge(web::routes_login::routes())
-        .nest("/api", web::routes_tickets::routes(mc.clone()))
+        .nest("/api", routes_apis)
         .layer(middleware::map_response(main_response_mapper))
+        .layer(middleware::from_fn_with_state(
+			mc.clone(),
+			web::mw_auth::mw_ctx_resolver,
+		))//must be above CookieManager because...
         .layer(CookieManagerLayer::new())
         // Nest service allows you to attach another router to a URL base. So "/" inside the service will be "/books" to the outside world.
         .nest_service("/books", rest::books_service())

@@ -1,7 +1,7 @@
 //! Simplistic Model Layer
 //! (with mock-store layer)
 
-//use crate::ctx::Ctx;
+use crate::ctx::Ctx;
 use crate::{Error, Result};
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
@@ -10,7 +10,7 @@ use std::sync::{Arc, Mutex};
 #[derive(Clone, Debug, Serialize)]
 pub struct Ticket {
 	pub id: u64,
-	//pub cid: u64, // creator user_id
+	pub cid: u64, // creator user_id
 	pub title: String,
 }
 #[derive(Deserialize)]
@@ -23,6 +23,7 @@ pub struct TicketForCreate {
 #[derive(Clone)]//Clone will not clone the Vector, but only the Arc
 pub struct ModelController {
 	tickets_store: Arc<Mutex<Vec<Option<Ticket>>>>,
+	//db_conn: ...
 }//ONLY for local prototype as this will grow infinitely!
 
 // Constructor
@@ -37,7 +38,7 @@ impl ModelController {
 impl ModelController {
 	pub async fn create_ticket(
 		&self,
-		//ctx: Ctx,
+		ctx: Ctx,
 		ticket_fc: TicketForCreate,
 	) -> Result<Ticket> {
 		let mut store = self.tickets_store.lock().unwrap();
@@ -45,7 +46,7 @@ impl ModelController {
 		let id = store.len() as u64;
 		let ticket = Ticket {
 			id,
-			//cid: ctx.user_id(),
+			cid: ctx.user_id(),
 			title: ticket_fc.title,
 		};
 		store.push(Some(ticket.clone()));
@@ -53,7 +54,7 @@ impl ModelController {
 		Ok(ticket)
 	}
 
-	pub async fn list_tickets(&self, /*_ctx: Ctx*/) -> Result<Vec<Ticket>> {
+	pub async fn list_tickets(&self, _ctx: Ctx) -> Result<Vec<Ticket>> {
 		let store = self.tickets_store.lock().unwrap();
 
 		let tickets = store.iter().filter_map(|t| t.clone()).collect();
@@ -61,7 +62,7 @@ impl ModelController {
 		Ok(tickets)
 	}
 
-	pub async fn delete_ticket(&self, /*_ctx: Ctx,*/ id: u64) -> Result<Ticket> {
+	pub async fn delete_ticket(&self, _ctx: Ctx, id: u64) -> Result<Ticket> {
 		let mut store = self.tickets_store.lock().unwrap();
 
 		let ticket = store.get_mut(id as usize).and_then(|t| t.take());
@@ -69,7 +70,7 @@ impl ModelController {
 		ticket.ok_or(Error::TicketDeleteFailIdNotFound { id })
 	}
 
-	pub async fn update_ticket(&self, /*_ctx: Ctx,*/ id: u64) -> Result<Ticket> {
+	pub async fn update_ticket(&self, _ctx: Ctx, id: u64) -> Result<Ticket> {
 		let mut store = self.tickets_store.lock().unwrap();
 
 		let ticket = store.get_mut(id as usize).and_then(|t| t.clone());

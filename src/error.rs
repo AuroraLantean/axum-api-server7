@@ -8,7 +8,12 @@ pub type Result<T> = core::result::Result<T, Error>;
 //#[serde(tag = "type", content = "data")]
 pub enum Error {
 	LoginFail,
-	
+
+	// -- Auth errors.
+	AuthFailNoAuthTokenCookie,
+	AuthFailTokenWrongFormat,
+	AuthFailCtxNotInRequestExt,
+
 	// -- Model errors.
 	TicketDeleteFailIdNotFound { id: u64 },
 }
