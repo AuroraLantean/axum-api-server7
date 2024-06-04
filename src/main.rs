@@ -1,43 +1,25 @@
-//! Run with
-//!
-//! ```not_rust
-//! cargo run -p example-hello-world
-//! ```
-mod db;
-mod rest;
-mod view;
-mod error;
-mod web;
 pub use self::error::{Error, Result};//redeclare Error and Result... to be used as "use crate::{..}"
 use crate::db::init_db;
 //use anyhow::{Ok, Result};
-use axum::{middleware, response::Response, Extension, Router}; //response::Html, routing::get,
+use axum::{middleware, response::Response, Extension, Router}; use model::ModelController;
+//response::Html, routing::get,
 use sqlx::SqlitePool;
 use tokio::net::TcpListener;
 use tower_cookies::CookieManagerLayer;
 use view::routes_hello;
 
+mod db;
+mod rest;
+mod view;
+mod error;
+mod model;
+mod web;
+
 //To be continued: https://crates.io/crates/httpc-test, https://www.youtube.com/watch?v=XZtlD_m59sM, https://www.youtube.com/watch?v=JUWSy9pXgMQ&t=2407s
 
-/// Build the overall web service router.
-/// Constructing the router in a function makes it easy to re-use in unit tests.
-fn router(connection_pool: SqlitePool) -> Router {
-    Router::new()
-        .merge(routes_hello())
-        .merge(web::routes_login::routes())
-        .layer(middleware::map_response(main_response_mapper))
-        .layer(CookieManagerLayer::new())
-        // Nest service allows you to attach another router to a URL base. So "/" inside the service will be "/books" to the outside world.
-        .nest_service("/books", rest::books_service())
-        // Add the web view
-        .nest_service("/", view::view_service())
-        // Add the connection pool as a "layer", available for dependency injection.
-        .layer(Extension(connection_pool))
-} //layer adds dependency injection layer to it
-
-// 8.49 @ https://www.youtube.com/watch?v=XZtlD_m59sM&t=87s
+// cargo watch -q -c -w src/ -x run
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     // use anyhow to bubble up any error
     // Load environment variables from .env if available
     dotenvy::dotenv().expect("Unable to access .env file");
@@ -54,11 +36,28 @@ async fn main() {
     .expect("Could not add tcp listener");
     println!("listening on {}", listener.local_addr().unwrap());
 
+    // Initialize ModelController.
+	let mc = ModelController::new().await?;
+
     // Initialize the Axum routing service
-    let router = router(connection_pool);
+    let router = Router::new()
+        .merge(routes_hello())
+        .merge(web::routes_login::routes())
+        .nest("/api", web::routes_tickets::routes(mc.clone()))
+        .layer(middleware::map_response(main_response_mapper))
+        .layer(CookieManagerLayer::new())
+        // Nest service allows you to attach another router to a URL base. So "/" inside the service will be "/books" to the outside world.
+        .nest_service("/books", rest::books_service())
+        // Add the web view
+        .nest_service("/", view::view_service())
+        // Add the connection pool as a "layer", available for dependency injection.
+        .layer(Extension(connection_pool));
+    //layer adds dependency injection layer to it
+    
     axum::serve(listener, router.into_make_service())
         .await
         .expect("Error serving application");
+    Ok(())
 }
 
 async fn main_response_mapper(
