@@ -30,7 +30,8 @@ anyhow = "1.0.86"
 reqwest = { version = "0.12.4", features = ["json", "stream"] }
 lazy-regex = "3.1.0"
 async-trait = "0.1.80"
-#strum_macros = "0.25"
+strum_macros = "0.26.3"
+uuid = {version = "1.8.0", features = ["v4","fast-rng",]} #["serde", "v4"]
 
 bcrypt = "0.15.1"
 jsonwebtoken = "9.3.0"
@@ -48,8 +49,6 @@ ethers = { version = "2.0.14", features = ["legacy", "rustls"] }
 #validator = { version = "0.16.1", features = ["derive"] }
 #tracing = "0.1.40"
 #tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
-#uuid = { version = "1.7.0", features = ["serde", "v4"] }
-#uuid = {version = "1", features = ["v4","fast-rng",]}
 
 [dev-dependencies]
 axum-test-helper = "0.3.0"

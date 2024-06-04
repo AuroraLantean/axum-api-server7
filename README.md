@@ -60,6 +60,8 @@ cargo watch -q -c -w src/ -x run
 cargo watch -q -c -w tests/ -x "test -q t1 -- --nocapture"
 ```
 
+To Test failed authentification, comment out `req_login.await?.print().await?;` in the `example/quick_dev.rs` and save it, it should auto run the tests. Confirm different client error and server error with the same UUID
+
 ## Run API Client
 
 Install and launch the Slumber API Client from https://github.com/LucasPickering/slumber
